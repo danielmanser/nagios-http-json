@@ -613,7 +613,6 @@ def main(cliargs):
 
         json_data = response.read()
         request_ended = datetime.now()
-        print(request_ended)
 
     except HTTPError as e:
         # Try to recover from HTTP Error, if there is JSON in the response
