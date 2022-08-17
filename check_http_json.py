@@ -9,6 +9,7 @@ import ssl
 from pprint import pprint
 from urllib.error import HTTPError
 from urllib.error import URLError
+from datetime import datetime
 
 plugin_description = \
 """
@@ -24,8 +25,8 @@ WARNING_CODE = 1
 CRITICAL_CODE = 2
 UNKNOWN_CODE = 3
 
-__version__ = '2.0.0'
-__version_date__ = '2020-03-22'
+__version__ = '2.0.1'
+__version_date__ = '2022-08-08'
 
 class NagiosHelper:
     """
@@ -587,6 +588,7 @@ def main(cliargs):
     json_data = ''
 
     try:
+        request_started = datetime.now()
         req = urllib.request.Request(url)
         req.add_header("User-Agent", "check_http_json")
         if args.auth:
@@ -610,6 +612,8 @@ def main(cliargs):
             response = urllib.request.urlopen(req, context=context)
 
         json_data = response.read()
+        request_ended = datetime.now()
+        print(request_ended)
 
     except HTTPError as e:
         # Try to recover from HTTP Error, if there is JSON in the response
@@ -635,8 +639,10 @@ def main(cliargs):
         nagios.append_metrics(processor.checkMetrics())
         nagios.append_unknown(processor.checkUnknown())
 
+    # Calculate time required for request
+    time_request = (request_ended - request_started).total_seconds()
     # Print Nagios specific string and exit appropriately
-    print(nagios.getMessage())
+    print(nagios.getMessage(message=f'time_request: {time_request}'))
     sys.exit(nagios.getCode())
 
 
